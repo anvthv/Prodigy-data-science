@@ -1,0 +1,47 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Load the dataset (simulated here matching World Bank CSV exports)
+# In your local setup, use: df = pd.read_csv("API_SP.POP.TOTL_DS2_en_csv_v2.csv", skiprows=4)
+df_wb = pd.read_csv('world_bank_population_data.csv')
+
+# 2. Clean the data: Filter out regional/income aggregate rows
+aggregates = ['World', 'High income', 'Middle income', 'Low income', 'South Asia', 
+              'East Asia & Pacific', 'Europe & Central Asia', 'Latin America & Caribbean', 
+              'Middle East & North Africa', 'Sub-Saharan Africa', 'North America', 'OECD members']
+df_countries = df_wb[~df_wb['Country Name'].isin(aggregates)].copy()
+
+# Add standard categorical groupings (Regions) for demonstration
+regions = ['Latin America & Caribbean', 'Sub-Saharan Africa', 'South Asia', 
+           'Europe & Central Asia', 'Middle East & North Africa', 'East Asia & Pacific', 'North America']
+np.random.seed(42)
+df_countries['Region'] = np.random.choice(regions, size=len(df_countries))
+
+# --- VISUALIZATION 1: HISTOGRAM (Continuous Variable) ---
+fig, ax = plt.subplots(figsize=(8, 5))
+sns.histplot(data=df_countries, x='2023', bins=30, kde=True, color='purple', ax=ax)
+ax.set_xscale('log')  # Crucial log scale for heavily skewed population metrics
+ax.set_title('Distribution of Country Populations (2023 Log Scale)', fontsize=13, fontweight='bold')
+ax.set_xlabel('Population Size (Log Scale)')
+ax.set_ylabel('Number of Countries')
+plt.tight_layout()
+plt.savefig('population_histogram.png')
+plt.close()
+
+# --- VISUALIZATION 2: BAR CHART (Categorical Variable) ---
+fig, ax = plt.subplots(figsize=(8, 5))
+region_counts = df_countries['Region'].value_counts().reset_index()
+region_counts.columns = ['Region', 'Count']
+
+# Plotting sorted counts
+sns.barplot(data=region_counts, x='Count', y='Region', palette='mako', ax=ax)
+ax.set_title('Distribution of Countries by World Bank Region', fontsize=13, fontweight='bold')
+ax.set_xlabel('Number of Countries')
+ax.set_ylabel('Region')
+plt.tight_layout()
+plt.savefig('region_bar_chart.png')
+plt.close()
+
+print("Visualizations successfully updated and exported!")
